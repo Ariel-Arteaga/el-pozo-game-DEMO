@@ -1,0 +1,1835 @@
+:root {
+  --arena: #c9a876;
+  --arena-oscura: #a3814f;
+  --tierra: #5c4a30;
+  --tierra-oscura: #3a2e1c;
+  --verde-seco: #7c8a5a;
+  --texto: #2b2114;
+  --peligro: #a6402c;
+  --papel: #ece0c2;
+  --tinta: #2a1c10;
+  --sangre: #8f2a1a;
+  --sangre-viva: #ab3623;
+  --ocre: #d8b467;
+  --oliva: #3f5427;
+}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, var(--arena-oscura), var(--tierra-oscura));
+  font-family: "Courier New", Courier, monospace;
+  color: var(--papel);
+}
+
+#game-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 10px;
+  box-sizing: border-box;
+  background: var(--tierra-oscura);
+  overflow: hidden;
+}
+
+#title-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(236, 224, 194, 0.15);
+}
+
+#title-bar h1 {
+  margin: 0;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ocre);
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.subtitle {
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  color: rgba(124, 138, 90, 0.85);
+}
+
+#hud {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 10px;
+  padding: 10px 18px;
+  background:
+    repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 8px),
+    linear-gradient(180deg, #4a4530, #2e2b1c 90%);
+  border: 2px solid #1c1a10;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+#hud::before,
+#hud::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #8a8264, #3a3620 70%);
+  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%);
+}
+#hud::before { left: 6px; }
+#hud::after { right: 6px; }
+
+.hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 16px;
+  margin-right: 16px;
+  border-right: 1px solid rgba(236, 224, 194, 0.18);
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  letter-spacing: 2px;
+  color: var(--ocre);
+  white-space: nowrap;
+}
+
+.hud-brand-star {
+  color: var(--sangre-viva);
+  text-shadow: 0 0 6px rgba(171, 54, 35, 0.7);
+}
+
+.hud-brand-text {
+  font-size: 0.85rem;
+}
+
+.hud-group {
+  display: flex;
+  gap: 20px;
+}
+
+.hud-divider {
+  width: 1px;
+  height: 34px;
+  margin: 0 16px;
+  background: linear-gradient(rgba(236, 224, 194, 0), rgba(236, 224, 194, 0.25), rgba(236, 224, 194, 0));
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 64px;
+}
+
+.hud-item-bar { min-width: 96px; }
+.hud-item-lives { min-width: 56px; }
+
+.hud-label {
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(236, 224, 194, 0.55);
+}
+
+.hud-value {
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 1px;
+  color: var(--papel);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.hud-sr-only {
+  display: none;
+}
+
+#lives-display {
+  display: flex;
+  gap: 2px;
+}
+
+.bar {
+  width: 100%;
+  height: 9px;
+  margin-top: 2px;
+  background: #1c1a10;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.bar-fill.health {
+  height: 100%;
+  transition: width 0.15s ease-out, background-color 0.3s ease-out;
+}
+
+#fullscreen-hint {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 5px 14px;
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: var(--ocre);
+  background: rgba(12, 8, 4, 0.75);
+  border: 1px solid rgba(216, 180, 103, 0.4);
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#fullscreen-hint.show {
+  animation: hint-fade 6s ease-out forwards;
+}
+
+@keyframes hint-fade {
+  0% { opacity: 0; transform: translate(-50%, -4px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -4px); }
+}
+
+#game-canvas {
+  display: block;
+  background: var(--arena);
+  border: 2px solid var(--tierra);
+  image-rendering: pixelated;
+}
+
+#controls-help {
+  margin: 10px 0 0;
+  font-size: 0.7rem;
+  color: var(--arena-oscura);
+  text-align: center;
+}
+
+/* ==========================================================
+   EL POZO — Guerra del Chaco
+   Pantallas: inicio, parte de guerra (fin de partida) y pausa
+   ========================================================== */
+
+#start-screen,
+#overlay,
+#pause-menu {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--papel);
+  font-family: "Special Elite", "Courier New", Courier, monospace;
+}
+
+#start-screen.hidden,
+#overlay.hidden,
+#pause-menu.hidden {
+  display: none;
+}
+
+/* ---------- PANTALLA DE INICIO ---------- */
+#start-screen {
+  z-index: 50;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 7% 5% 4%;
+  overflow: hidden;
+  background: linear-gradient(#0c0704, #6e3616 60%, #e0a95d);
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.aves {
+  animation: aves-vuelo 46s ease-in-out infinite alternate;
+}
+
+@keyframes aves-vuelo {
+  from { transform: translate(-60px, 8px); }
+  to { transform: translate(90px, -6px); }
+}
+
+.polvo {
+  position: absolute;
+  left: -30%;
+  width: 160%;
+  height: 34%;
+  background: radial-gradient(ellipse at center, rgba(226, 176, 108, 0.3), transparent 66%);
+  filter: blur(8px);
+  pointer-events: none;
+  animation: polvo-deriva 24s ease-in-out infinite alternate;
+}
+
+.polvo-a { bottom: 22%; }
+.polvo-b { bottom: 6%; opacity: 0.7; animation-duration: 34s; animation-direction: alternate-reverse; }
+
+@keyframes polvo-deriva {
+  from { transform: translateX(-9%); }
+  to { transform: translateX(9%); }
+}
+
+.velo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.45), transparent 36%),
+    radial-gradient(ellipse at 50% 55%, transparent 50%, rgba(0, 0, 0, 0.6) 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .06  0 0 0 0 .02  0 0 0 .3 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.start-top,
+.start-bottom {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.start-kicker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  letter-spacing: 4px;
+  color: var(--ocre);
+  text-shadow: 0 2px 4px #000;
+}
+
+.start-kicker::before,
+.start-kicker::after {
+  content: "";
+  width: 44px;
+  height: 2px;
+  background: var(--ocre);
+  opacity: 0.7;
+}
+
+#start-title {
+  margin: 0;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(4rem, 14vw, 7.6rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 8px;
+  color: var(--papel);
+  filter: url(#borde-aspero) drop-shadow(0 5px 0 #7a1e10) drop-shadow(0 10px 14px rgba(0, 0, 0, 0.7));
+}
+
+.start-subtitle {
+  margin: 8px 0 0;
+  font-size: 1.05rem;
+  letter-spacing: 3px;
+  color: var(--papel);
+  text-shadow: 0 2px 6px #000, 0 0 2px #000;
+}
+
+.start-bottom {
+  gap: 12px;
+}
+
+#start-btn {
+  font-size: 1.45rem;
+  padding: 16px 46px;
+}
+
+.start-help {
+  margin: 4px 0 0;
+  font-size: 0.66rem;
+  letter-spacing: 1.5px;
+  color: rgba(236, 224, 194, 0.78);
+  text-shadow: 0 1px 3px #000;
+}
+
+.start-credit {
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  color: #b39a68;
+  text-shadow: 0 1px 3px #000;
+}
+
+/* ---------- PARTE DE GUERRA (papel) ---------- */
+#overlay {
+  z-index: 40;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 4px),
+    radial-gradient(circle at 50% 45%, rgba(58, 14, 8, 0.78), rgba(8, 4, 2, 0.93));
+}
+
+#overlay.victory {
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 4px),
+    radial-gradient(circle at 50% 45%, rgba(40, 46, 16, 0.78), rgba(8, 5, 2, 0.93));
+}
+
+#pause-menu {
+  z-index: 45;
+  padding: 16px;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 4px),
+    rgba(12, 7, 3, 0.74);
+  backdrop-filter: sepia(0.6) brightness(0.7) blur(1.5px);
+}
+
+.parte {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(430px, 92%);
+  padding: 20px 30px 28px;
+  text-align: center;
+  color: var(--tinta);
+  background:
+    radial-gradient(circle at 9% 11%, rgba(122, 70, 22, 0.32), transparent 34%),
+    radial-gradient(circle at 95% 92%, rgba(96, 44, 14, 0.36), transparent 40%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .32  0 0 0 0 .2  0 0 0 0 .08  0 0 0 .4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    linear-gradient(#e8d8ae, #d6c08e);
+  box-shadow:
+    inset 0 0 46px rgba(84, 46, 14, 0.6),
+    0 0 0 2px #2a1a0c,
+    7px 11px 0 rgba(0, 0, 0, 0.55),
+    0 26px 48px rgba(0, 0, 0, 0.65);
+  transform: rotate(-0.7deg);
+}
+
+.parte::before {
+  content: "";
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 96px;
+  height: 26px;
+  background: rgba(206, 188, 140, 0.8);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transform: translateX(-50%) rotate(2.5deg);
+}
+
+.parte-head {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed rgba(42, 28, 16, 0.55);
+  font-size: 0.66rem;
+  letter-spacing: 2px;
+}
+
+#overlay-text {
+  margin: 6px 0 0;
+  padding: 4px 18px 2px;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(1.7rem, 5.4vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 4px;
+  color: var(--sangre);
+  border: 4px solid var(--sangre);
+  border-radius: 3px;
+  opacity: 0.93;
+  transform: rotate(-3.5deg);
+  filter: url(#borde-aspero);
+}
+
+#overlay.victory #overlay-text {
+  color: var(--oliva);
+  border-color: var(--oliva);
+}
+
+#overlay-subtext {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
+
+.score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 10px 10px 12px;
+  border-top: 4px double var(--tinta);
+  border-bottom: 4px double var(--tinta);
+}
+
+.score-label {
+  font-size: 0.72rem;
+  letter-spacing: 6px;
+}
+
+#final-score-value {
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(3rem, 10vw, 4.6rem);
+  line-height: 1.05;
+  letter-spacing: 6px;
+  color: var(--tinta);
+  text-shadow: 1px 1px 0 rgba(42, 28, 16, 0.35), 0 0 2px rgba(42, 28, 16, 0.6);
+}
+
+/* ---------- PAUSA ---------- */
+#pause-title {
+  margin: 4px 0 0;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(2.6rem, 8vw, 3.8rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 8px;
+  color: var(--tinta);
+  filter: url(#borde-aspero);
+}
+
+.pause-sub {
+  margin: -4px 0 4px;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.pause-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.pause-hint {
+  margin: 0;
+  font-size: 0.66rem;
+  letter-spacing: 3px;
+  opacity: 0.75;
+}
+
+/* ---------- BOTONES (sello / lona) ---------- */
+.btn-chaco {
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  color: var(--tinta);
+  background: rgba(42, 28, 16, 0.06);
+  border: 3px solid var(--tinta);
+  border-radius: 2px;
+  box-shadow: 4px 4px 0 rgba(42, 28, 16, 0.85);
+  cursor: pointer;
+  transition: transform 0.06s, background 0.12s, color 0.12s;
+}
+
+.btn-chaco:hover {
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.btn-chaco:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 rgba(42, 28, 16, 0.85);
+}
+
+.btn-sangre {
+  color: var(--papel);
+  background: var(--sangre);
+  border-color: #2b0c06;
+  box-shadow: 4px 4px 0 #000;
+  outline: 2px dashed rgba(236, 224, 194, 0.35);
+  outline-offset: -8px;
+}
+
+.btn-sangre:hover {
+  background: var(--sangre-viva);
+  color: #fff;
+}
+
+.btn-chaco:focus-visible {
+  outline: 3px solid var(--ocre);
+  outline-offset: 4px;
+}
+
+.blink {
+  animation: parpadeo 1.6s ease-in-out infinite;
+}
+
+.blink:hover {
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes parpadeo {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.28; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink, .aves, .polvo { animation: none; }
+}
+
+/* ==========================================================
+   CARTAS NARRATIVAS (MODO HISTORIA) — papel 100% CSS
+   ========================================================== */
+#letter-overlay {
+  --renglon: 32px;
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(60, 30, 8, 0.55), rgba(6, 3, 1, 0.94) 78%);
+  backdrop-filter: sepia(0.5) brightness(0.55) blur(2px);
+  animation: carta-fondo 0.5s ease-out both;
+}
+
+#letter-overlay.hidden { display: none; }
+
+.carta-marco {
+  display: flex;
+  width: min(640px, 100%);
+  max-height: 100%;
+  filter: drop-shadow(0 22px 30px rgba(0, 0, 0, 0.85)) drop-shadow(0 3px 2px rgba(0, 0, 0, 0.6));
+  transform: rotate(-1.2deg);
+  animation: carta-entra 0.8s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+
+.carta-papel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  color: #2b2116;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(120, 72, 24, 0.28) 100%),
+    radial-gradient(circle at 12% 18%, rgba(150, 100, 45, 0.22), transparent 38%),
+    radial-gradient(circle at 88% 82%, rgba(110, 62, 20, 0.3), transparent 45%),
+    linear-gradient(165deg, #efe1ba 0%, #e0cb98 55%, #d3b880 100%);
+  box-shadow:
+    inset 0 0 70px rgba(96, 52, 14, 0.6),
+    inset 0 0 14px rgba(50, 26, 6, 0.7);
+  clip-path: polygon(
+    0% 1.2%, 4% 0%, 9% 1%, 15% 0.3%, 22% 1.1%, 30% 0.2%, 38% 0.9%, 47% 0%, 55% 1%, 63% 0.3%, 72% 1.2%, 80% 0.1%, 88% 0.9%, 95% 0.2%, 100% 1%,
+    99.3% 8%, 100% 17%, 99.1% 27%, 100% 38%, 99.4% 49%, 100% 60%, 99.2% 71%, 100% 82%, 99.5% 92%, 100% 100%,
+    94% 99.2%, 86% 100%, 78% 99%, 69% 99.9%, 60% 99.1%, 51% 100%, 42% 99.2%, 33% 100%, 24% 99%, 15% 99.9%, 7% 99.2%, 0% 100%,
+    0.7% 90%, 0% 79%, 0.8% 68%, 0% 56%, 0.6% 45%, 0% 33%, 0.9% 21%, 0% 10%
+  );
+}
+
+/* Grano fino + pátina de envejecimiento (ruido SVG inline, sin archivos) */
+.carta-fibra {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .22  0 0 0 0 .08  0 0 0 .5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='4' seed='7'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .27  0 0 0 0 .08  0 0 0 .9 -.25'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
+}
+
+/* Anillos de taza de café */
+.mancha-cafe {
+  position: absolute;
+  top: 5%;
+  right: 7%;
+  z-index: 1;
+  width: 122px;
+  height: 122px;
+  border-radius: 52% 48% 55% 45% / 47% 53% 47% 53%;
+  background:
+    radial-gradient(circle, rgba(120, 78, 34, 0.12) 0 56%, transparent 57%),
+    radial-gradient(circle, transparent 0 58%, rgba(105, 66, 28, 0.6) 62%, rgba(90, 54, 20, 0.28) 68%, transparent 74%);
+  transform: rotate(20deg) scaleY(0.93);
+  filter: blur(0.6px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.mancha-cafe-2 {
+  top: auto;
+  right: auto;
+  bottom: 9%;
+  left: 5%;
+  width: 84px;
+  height: 84px;
+  opacity: 0.8;
+  transform: rotate(-35deg);
+  -webkit-mask-image: conic-gradient(from 40deg, #000 0 74%, transparent 74% 100%);
+  mask-image: conic-gradient(from 40deg, #000 0 74%, transparent 74% 100%);
+}
+
+/* Salpicadura de sangre con goteo */
+.mancha-sangre {
+  position: absolute;
+  right: 3%;
+  bottom: 14%;
+  z-index: 1;
+  width: 150px;
+  height: 170px;
+  background:
+    radial-gradient(circle at 46% 42%, rgba(92, 10, 8, 0.88) 0 13%, rgba(110, 14, 10, 0.55) 14% 24%, transparent 26%),
+    radial-gradient(circle at 72% 24%, rgba(92, 10, 8, 0.85) 0 4.5%, transparent 5.5%),
+    radial-gradient(circle at 24% 62%, rgba(92, 10, 8, 0.8) 0 3.4%, transparent 4.4%),
+    radial-gradient(circle at 82% 68%, rgba(92, 10, 8, 0.75) 0 2.6%, transparent 3.4%),
+    radial-gradient(circle at 58% 86%, rgba(92, 10, 8, 0.85) 0 5%, transparent 6%),
+    radial-gradient(circle at 16% 28%, rgba(92, 10, 8, 0.7) 0 2%, transparent 2.8%),
+    radial-gradient(circle at 34% 14%, rgba(92, 10, 8, 0.7) 0 1.6%, transparent 2.4%);
+  filter: blur(0.4px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.mancha-sangre::before,
+.mancha-sangre::after {
+  content: "";
+  position: absolute;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(rgba(92, 10, 8, 0.85), rgba(70, 6, 5, 0.65) 80%, rgba(70, 6, 5, 0));
+}
+.mancha-sangre::before { left: 43%; top: 40%; width: 5px; height: 62%; }
+.mancha-sangre::after { left: 60%; top: 52%; width: 3px; height: 38%; }
+
+/* Esquinas quemadas */
+.quemadura {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 0 0, rgba(28, 12, 2, 0.8), transparent 15%),
+    radial-gradient(circle at 100% 0, rgba(28, 12, 2, 0.55), transparent 11%),
+    radial-gradient(circle at 100% 100%, rgba(28, 12, 2, 0.85), transparent 17%),
+    radial-gradient(circle at 0 100%, rgba(28, 12, 2, 0.5), transparent 10%);
+}
+
+/* Dobleces del papel */
+.doblez {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+.doblez-horizontal {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 14px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.1) 45%, rgba(255, 255, 255, 0.28) 55%, transparent);
+}
+.doblez-vertical {
+  top: 0;
+  bottom: 0;
+  left: 33%;
+  width: 14px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.09) 45%, rgba(255, 255, 255, 0.25) 55%, transparent);
+}
+
+/* Zona de lectura (con renglones que se mueven con el scroll) */
+.carta-scroll {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  padding: 34px 46px 26px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(90, 54, 20, 0.5) transparent;
+  background: repeating-linear-gradient(transparent 0 calc(var(--renglon) - 1px), rgba(80, 50, 20, 0.14) calc(var(--renglon) - 1px) var(--renglon));
+  background-attachment: local;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 20px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 20px), transparent);
+}
+
+.carta-texto {
+  position: relative;
+  font-family: "Caveat", "Segoe Script", cursive;
+  font-size: 1.65rem;
+  line-height: var(--renglon);
+  color: #2b2116;
+  text-shadow: 0 0 1px rgba(43, 33, 22, 0.55);
+}
+
+.carta-texto .fecha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 22px;
+  padding-bottom: 6px;
+  border-bottom: 2px dashed rgba(43, 33, 22, 0.4);
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.carta-texto .carta-titulo {
+  margin: 0 0 14px;
+  font-family: "Caveat", cursive;
+  font-size: 2.3rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1f160c;
+  text-decoration: underline wavy rgba(143, 42, 26, 0.7);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.carta-texto p {
+  margin: 0 0 var(--renglon);
+  opacity: 0;
+  animation: tinta-aparece 0.9s ease forwards;
+  animation-delay: calc(0.45s + var(--i, 0) * 0.65s);
+}
+
+.carta-texto .firma {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f160c;
+  transform: rotate(-3deg);
+}
+
+.carta-texto .tachado {
+  text-decoration: line-through;
+  text-decoration-thickness: 3px;
+  text-decoration-color: rgba(43, 33, 22, 0.75);
+  opacity: 0.6;
+}
+
+.carta-texto .sangre-texto { color: #7a1610; font-weight: 700; }
+
+.carta-texto .sello {
+  position: absolute;
+  top: 34px;
+  right: -6px;
+  padding: 2px 12px 0;
+  font-family: "Black Ops One", Impact, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(143, 42, 26, 0.78);
+  border: 3px double rgba(143, 42, 26, 0.78);
+  border-radius: 3px;
+  transform: rotate(9deg);
+  mix-blend-mode: multiply;
+  filter: url(#borde-aspero);
+  pointer-events: none;
+}
+
+/* Pie fijo con botón */
+.carta-pie {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 46px 22px;
+  border-top: 2px dashed rgba(43, 33, 22, 0.28);
+}
+
+.carta-hint {
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 3px;
+  opacity: 0.6;
+}
+
+.carta-pie .btn-chaco {
+  padding: 9px 26px;
+  font-size: 0.95rem;
+}
+
+@keyframes carta-fondo {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes carta-entra {
+  from { opacity: 0; transform: translateY(70px) rotate(-7deg) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) rotate(-1.2deg) scale(1); }
+}
+
+@keyframes tinta-aparece {
+  from { opacity: 0; filter: blur(4px); transform: translateY(5px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@media (max-width: 560px) {
+  #letter-overlay { --renglon: 28px; padding: 8px; }
+  .carta-scroll { padding: 26px 24px 20px; }
+  .carta-texto { font-size: 1.4rem; }
+  .carta-texto .carta-titulo { font-size: 1.9rem; }
+  .carta-texto .sello { top: 26px; font-size: 0.75rem; }
+  .carta-pie { padding: 8px 24px 16px; }
+  .carta-hint { display: none; }
+  .carta-pie .btn-chaco { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carta-marco, #letter-overlay { animation: none; }
+  .carta-texto p { animation: none; opacity: 1; }
+}
+
+/* Cartas a máquina de escribir (telegramas, partes, notas del archivo) */
+.carta-papel.tipo-maquina .carta-texto {
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 1.02rem;
+  text-shadow: none;
+}
+.carta-papel.tipo-maquina .carta-titulo {
+  display: inline-block;
+  padding-bottom: 4px;
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 3px double rgba(143, 42, 26, 0.7);
+}
+.carta-papel.tipo-maquina .firma {
+  font-family: "Special Elite", "Courier New", monospace;
+  font-size: 1rem;
+  transform: none;
+}
+
+/* ==========================================================
+   MENÚ: MODO AVENTURA (3 frentes) + ARCHIVO DE HISTORIA
+   ========================================================== */
+.start-menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.btn-papel {
+  color: var(--papel);
+  background: rgba(12, 7, 3, 0.55);
+  border-color: rgba(236, 224, 194, 0.85);
+  box-shadow: 4px 4px 0 #000;
+  backdrop-filter: blur(2px);
+}
+.btn-papel:hover { background: var(--papel); color: var(--tinta); }
+
+#history-btn { font-size: 1.05rem; padding: 14px 30px; }
+
+#level-select,
+#history-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.8vh, 18px);
+  padding: clamp(12px, 3vh, 28px) clamp(12px, 3vw, 40px);
+  overflow: hidden;
+  color: var(--papel);
+  font-family: "Special Elite", "Courier New", monospace;
+  animation: menu-entra 0.45s ease-out both;
+}
+#level-select.hidden,
+#history-overlay.hidden { display: none; }
+
+#level-select {
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(224, 169, 93, 0.22), transparent 62%),
+    radial-gradient(ellipse at 50% 55%, transparent 45%, rgba(0, 0, 0, 0.78) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0 2px, transparent 2px 4px),
+    linear-gradient(#0f0803, #24130a 60%, #3a2110);
+}
+
+#history-overlay {
+  justify-content: flex-start;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(224, 169, 93, 0.18), transparent 60%),
+    radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.75) 100%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0 2px, transparent 2px 54px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 2px, transparent 2px 4px),
+    linear-gradient(#1b0f07, #2e1a0d);
+}
+
+.ls-kicker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 4px;
+  color: var(--ocre);
+  text-shadow: 0 2px 4px #000;
+}
+.ls-kicker::before,
+.ls-kicker::after {
+  content: "";
+  width: 34px;
+  height: 2px;
+  background: var(--ocre);
+  opacity: 0.7;
+}
+
+.ls-title {
+  margin: 0;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(1.8rem, 5.6vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--papel);
+  filter: url(#borde-aspero) drop-shadow(0 4px 0 #7a1e10) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.7));
+}
+
+.ls-sub {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  color: rgba(236, 224, 194, 0.72);
+  text-shadow: 0 1px 3px #000;
+}
+
+/* ---------- MODO AVENTURA: los 3 cuadros ---------- */
+.ls-cards {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(12px, 2.6vw, 34px);
+  width: 100%;
+  max-width: 1100px;
+  padding: 18px 10px 26px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.ls-cards::-webkit-scrollbar { display: none; }
+
+.nivel-card {
+  --giro: -1.6deg;
+  position: relative;
+  display: flex;
+  flex: 1 0 210px;
+  flex-direction: column;
+  max-width: 330px;
+  padding: 14px 12px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--tinta);
+  cursor: pointer;
+  border: 0;
+  border-radius: 2px;
+  scroll-snap-align: center;
+  background:
+    radial-gradient(circle at 9% 11%, rgba(122, 70, 22, 0.3), transparent 34%),
+    radial-gradient(circle at 95% 92%, rgba(96, 44, 14, 0.34), transparent 40%),
+    linear-gradient(#e8d8ae, #d6c08e);
+  box-shadow:
+    inset 0 0 34px rgba(96, 52, 14, 0.5),
+    0 0 0 2px #2a1a0c,
+    6px 10px 0 rgba(0, 0, 0, 0.55),
+    0 22px 36px rgba(0, 0, 0, 0.6);
+  transform: rotate(var(--giro));
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.25, 1), box-shadow 0.25s;
+}
+.nivel-card:first-child { margin-left: auto; }
+.nivel-card:last-child { margin-right: auto; }
+.nivel-card:nth-child(2) { --giro: 1.2deg; }
+.nivel-card:nth-child(3) { --giro: -0.8deg; }
+
+.nivel-card::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  z-index: 3;
+  width: 92px;
+  height: 24px;
+  background: rgba(206, 188, 140, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%) rotate(2deg);
+}
+
+.nivel-card:hover,
+.nivel-card:focus-visible {
+  outline: none;
+  transform: rotate(0) translateY(-10px) scale(1.03);
+  box-shadow:
+    inset 0 0 34px rgba(96, 52, 14, 0.5),
+    0 0 0 3px var(--ocre),
+    6px 10px 0 rgba(0, 0, 0, 0.55),
+    0 0 40px rgba(224, 169, 93, 0.35),
+    0 26px 44px rgba(0, 0, 0, 0.65);
+}
+
+.nivel-foto {
+  position: relative;
+  display: block;
+  height: clamp(120px, 30vh, 340px);
+  overflow: hidden;
+  border: 3px solid #1a1208;
+  background:
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.12) 0 6px, transparent 6px 12px),
+    linear-gradient(160deg, #6e3616, #26150a);
+  box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.75);
+}
+.nivel-foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.6) contrast(1.05) brightness(0.9);
+  transition: filter 0.35s, transform 0.7s;
+}
+.nivel-card:hover .nivel-foto img,
+.nivel-card:focus-visible .nivel-foto img {
+  filter: sepia(0.1) contrast(1.08) brightness(1);
+  transform: scale(1.07);
+}
+.nivel-foto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(0, 0, 0, 0.6) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px);
+}
+
+.nivel-num {
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  z-index: 2;
+  padding: 3px 12px 1px;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--papel);
+  background: var(--sangre);
+  border: 2px solid #2b0c06;
+  box-shadow: 2px 2px 0 #000;
+  transform: rotate(-4deg);
+}
+
+.nivel-hora {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  padding: 2px 8px;
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ocre);
+  background: rgba(12, 7, 3, 0.78);
+  border: 1px solid rgba(216, 180, 103, 0.5);
+}
+
+.nivel-titulo {
+  display: block;
+  margin-top: 12px;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(1.05rem, 1.9vw, 1.45rem);
+  line-height: 1.15;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sangre);
+}
+
+.nivel-desc {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nivel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+.nivel-tags span {
+  padding: 2px 7px;
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 1.5px solid rgba(42, 28, 16, 0.7);
+  border-radius: 2px;
+}
+
+.nivel-cta {
+  display: block;
+  margin-top: auto;
+  padding: 8px;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  letter-spacing: 4px;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--papel);
+  background: var(--sangre);
+  border: 2px solid #2b0c06;
+  box-shadow: 3px 3px 0 #000;
+  transition: background 0.15s, transform 0.06s;
+}
+.nivel-desc + .nivel-tags + .nivel-cta { margin-top: 14px; }
+.nivel-card:hover .nivel-cta,
+.nivel-card:focus-visible .nivel-cta { background: var(--sangre-viva); }
+.nivel-card:active .nivel-cta { transform: translate(2px, 2px); }
+
+/* ---------- ARCHIVO DE HISTORIA ---------- */
+.hist-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 1000px;
+}
+.hist-head .ls-kicker { justify-content: flex-start; margin-bottom: 4px; }
+.hist-head .ls-kicker::before { display: none; }
+.hist-head .btn-chaco { flex-shrink: 0; padding: 9px 18px; font-size: 0.9rem; }
+
+.hist-scroll {
+  flex: 1;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 0;
+  padding: 10px 10px 34px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(216, 180, 103, 0.5) transparent;
+}
+
+.hist-intro {
+  position: relative;
+  margin: 12px 0 30px;
+  padding: 28px 32px 24px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--tinta);
+  background:
+    radial-gradient(circle at 9% 11%, rgba(122, 70, 22, 0.3), transparent 34%),
+    radial-gradient(circle at 95% 92%, rgba(96, 44, 14, 0.34), transparent 40%),
+    linear-gradient(#e8d8ae, #d6c08e);
+  box-shadow:
+    inset 0 0 46px rgba(84, 46, 14, 0.55),
+    0 0 0 2px #2a1a0c,
+    6px 10px 0 rgba(0, 0, 0, 0.5),
+    0 20px 36px rgba(0, 0, 0, 0.55);
+  transform: rotate(-0.4deg);
+}
+.hist-intro::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 96px;
+  height: 24px;
+  background: rgba(206, 188, 140, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transform: translateX(-50%) rotate(-2deg);
+}
+.hist-intro p { margin: 0 0 12px; }
+.hist-intro .hist-sello {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  margin: 0;
+  padding: 2px 12px 0;
+  font-family: "Black Ops One", Impact, sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(143, 42, 26, 0.8);
+  border: 3px double rgba(143, 42, 26, 0.8);
+  transform: rotate(7deg);
+  mix-blend-mode: multiply;
+  filter: url(#borde-aspero);
+}
+
+.hist-linea {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid rgba(42, 28, 16, 0.7);
+}
+.hist-linea li { position: relative; padding-top: 16px; }
+.hist-linea li::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--sangre);
+  border: 2px solid var(--tinta);
+  border-radius: 50%;
+}
+.hist-linea b {
+  display: block;
+  font-family: "Black Ops One", Impact, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: var(--sangre);
+}
+.hist-linea strong {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.hist-linea span {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.hist-subtitulo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 20px;
+  font-family: "Black Ops One", Impact, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--ocre);
+  text-shadow: 0 2px 4px #000;
+}
+.hist-subtitulo::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: var(--ocre);
+  opacity: 0.45;
+}
+
+.hist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 28px 22px;
+  padding: 10px 4px 10px;
+}
+
+.hist-card {
+  --giro: -1.4deg;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 190px;
+  padding: 22px 16px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--tinta);
+  cursor: pointer;
+  border: 0;
+  border-radius: 2px;
+  background:
+    radial-gradient(circle at 9% 11%, rgba(122, 70, 22, 0.3), transparent 34%),
+    radial-gradient(circle at 95% 92%, rgba(96, 44, 14, 0.34), transparent 40%),
+    linear-gradient(#e8d8ae, #d6c08e);
+  box-shadow:
+    inset 0 0 26px rgba(96, 52, 14, 0.45),
+    0 0 0 2px #2a1a0c,
+    5px 8px 0 rgba(0, 0, 0, 0.5),
+    0 14px 24px rgba(0, 0, 0, 0.5);
+  transform: rotate(var(--giro));
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.25, 1), box-shadow 0.22s;
+}
+.hist-card:nth-child(3n + 2) { --giro: 1deg; }
+.hist-card:nth-child(3n) { --giro: -0.6deg; }
+
+.hist-card::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 64px;
+  height: 18px;
+  background: rgba(206, 188, 140, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transform: translateX(-50%) rotate(-2deg);
+}
+
+.hist-card:hover,
+.hist-card:focus-visible {
+  z-index: 2;
+  outline: none;
+  transform: rotate(0) translateY(-8px) scale(1.03);
+  box-shadow:
+    inset 0 0 26px rgba(96, 52, 14, 0.45),
+    0 0 0 3px var(--ocre),
+    5px 8px 0 rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(224, 169, 93, 0.3),
+    0 20px 34px rgba(0, 0, 0, 0.6);
+}
+
+.hist-tipo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.hist-titulo {
+  margin-top: 2px;
+  font-family: "Black Ops One", Impact, sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.15;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sangre);
+}
+
+.hist-lugar {
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  opacity: 0.75;
+}
+
+.hist-resumen {
+  display: -webkit-box;
+  margin-top: 4px;
+  overflow: hidden;
+  font-family: "Caveat", cursive;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.hist-pie {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.hist-pie em { font-style: normal; color: var(--sangre); }
+.hist-card.en-campana .hist-pie em::before { content: "★ "; }
+
+@keyframes menu-entra {
+  from { opacity: 0; transform: scale(1.03); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-height: 640px) {
+  .nivel-desc { display: none; }
+  .ls-sub { display: none; }
+}
+
+@media (max-width: 700px) {
+  .hist-linea { grid-template-columns: repeat(2, 1fr); }
+  .hist-head { align-items: center; }
+  .hist-intro { padding: 26px 20px 20px; }
+  .hist-intro .hist-sello { position: static; display: inline-block; margin-bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #level-select, #history-overlay { animation: none; }
+  .nivel-card, .hist-card, .nivel-foto img { transition: none; }
+}
+
+/* ==========================================================
+   FINAL: LA PAZ EN EL CHACO
+   Línea de tiempo: amanece → portada cae (1.0 s) → acta (2.0 s)
+   → firmas (3.2 / 4.2 / 5.2 s) → lacre (6.3 s)
+   ========================================================== */
+#paz-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 48;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.6vh, 16px);
+  padding: clamp(12px, 3vh, 26px) clamp(12px, 3vw, 36px);
+  overflow: hidden;
+  color: var(--papel);
+  font-family: "Special Elite", "Courier New", monospace;
+  background: #0c0704;
+}
+#paz-overlay.hidden { display: none; }
+
+/* --- Fondo: el amanecer --- */
+.paz-cielo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#0c0704 0%, #2b170b 22%, #6e3616 46%, #b8692b 62%, #e0a95d 78%, #ecc985 100%);
+  animation: paz-amanece 4s ease-out both;
+}
+
+.paz-sol {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  width: min(46vw, 380px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff1c2 0 22%, rgba(255, 214, 140, 0.75) 24% 34%, rgba(240, 169, 90, 0.32) 46%, transparent 70%);
+  transform: translateX(-50%);
+  animation: paz-sol-sube 4.5s ease-out both;
+}
+
+.paz-colinas {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: 0;
+}
+.paz-colinas-a {
+  height: 34%;
+  background: #3d2110;
+  clip-path: polygon(0 62%, 6% 50%, 13% 56%, 21% 40%, 30% 52%, 40% 44%, 50% 55%, 60% 42%, 70% 52%, 80% 38%, 90% 50%, 100% 44%, 100% 100%, 0 100%);
+}
+.paz-colinas-b {
+  height: 22%;
+  background: #160c05;
+  clip-path: polygon(0 58%, 12% 44%, 24% 54%, 36% 38%, 48% 50%, 60% 40%, 72% 52%, 84% 36%, 100% 50%, 100% 100%, 0 100%);
+}
+
+/* Silueta del pozo */
+.paz-pozo {
+  position: absolute;
+  left: 6%;
+  bottom: 13%;
+  width: 90px;
+  height: 70px;
+  background:
+    linear-gradient(#0d0703, #0d0703) 12px 8px / 5px 62px no-repeat,
+    linear-gradient(#0d0703, #0d0703) 73px 8px / 5px 62px no-repeat,
+    linear-gradient(#0d0703, #0d0703) 4px 4px / 82px 6px no-repeat,
+    linear-gradient(#0d0703, #0d0703) 44px 10px / 2px 30px no-repeat,
+    radial-gradient(ellipse at 50% 100%, #0d0703 0 34px, transparent 35px) 0 40px / 90px 30px no-repeat;
+}
+
+/* Todo lo de adelante queda sobre el fondo */
+#paz-overlay .polvo,
+#paz-overlay .velo { z-index: 1; }
+.paz-kicker,
+.paz-escena,
+#paz-continue-btn { position: relative; z-index: 3; }
+
+.paz-kicker { animation: paz-fade 1s 0.2s backwards; }
+
+/* Destello al caer la portada */
+.paz-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: #fff8e0;
+  opacity: 0;
+  animation: paz-destello 0.7s 1s ease-out both;
+}
+
+/* --- Escena: portada + acta --- */
+.paz-escena {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  max-width: 100%;
+  animation: paz-golpe 0.45s 1s, paz-golpe 0.32s 6.6s;
+}
+
+.paz-diario {
+  position: relative;
+  flex: 0 1 auto;
+  width: min(720px, 62vw, calc((100vh - 190px) * 1.36));
+  margin: 0;
+  padding: 10px 10px 8px;
+  background:
+    radial-gradient(circle at 9% 11%, rgba(122, 70, 22, 0.3), transparent 34%),
+    radial-gradient(circle at 95% 92%, rgba(96, 44, 14, 0.34), transparent 40%),
+    linear-gradient(#ecdcb4, #d9c08a);
+  box-shadow:
+    inset 0 0 40px rgba(96, 52, 14, 0.5),
+    0 0 0 2px #2a1a0c,
+    8px 12px 0 rgba(0, 0, 0, 0.5),
+    0 26px 50px rgba(0, 0, 0, 0.65);
+  transform: rotate(-2deg);
+  animation: paz-diario-entra 0.7s 0.5s cubic-bezier(0.15, 0.9, 0.2, 1.15) both;
+}
+.paz-diario::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 14%;
+  z-index: 2;
+  width: 96px;
+  height: 24px;
+  background: rgba(206, 188, 140, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  transform: rotate(-5deg);
+}
+.paz-diario img {
+  display: block;
+  width: 100%;
+  height: auto;
+  mix-blend-mode: multiply; /* el blanco del diario se funde con el papel viejo */
+  filter: sepia(0.25) contrast(1.05);
+}
+.paz-diario figcaption {
+  margin-top: 6px;
+  font-size: 0.66rem;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--tinta);
+  opacity: 0.8;
+}
+
+/* Si la imagen no carga, se muestra el titular escrito */
+.paz-titular { display: none; }
+.paz-diario.sin-imagen .paz-titular {
+  display: block;
+  padding: 40px 20px;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: 3px;
+  text-align: center;
+  text-transform: uppercase;
+  color: #5a3418;
+}
+
+/* --- Acta de paz --- */
+.paz-tratado {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(230px, 27vw, 320px);
+  margin: 0 0 -14px -74px;
+  padding: 28px 24px 62px;
+  color: var(--tinta);
+  background:
+    radial-gradient(circle at 90% 8%, rgba(122, 70, 22, 0.28), transparent 36%),
+    radial-gradient(circle at 8% 94%, rgba(96, 44, 14, 0.32), transparent 42%),
+    linear-gradient(#efe1ba, #dcc794);
+  box-shadow:
+    inset 0 0 36px rgba(96, 52, 14, 0.5),
+    0 0 0 2px #2a1a0c,
+    6px 10px 0 rgba(0, 0, 0, 0.5),
+    0 22px 40px rgba(0, 0, 0, 0.65);
+  transform: rotate(3deg);
+  animation: paz-tratado-entra 0.8s 2s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+.paz-tipo {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.paz-tratado h2 {
+  margin: 4px 0 8px;
+  padding-bottom: 6px;
+  font-family: "Black Ops One", Impact, "Arial Black", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sangre);
+  border-bottom: 3px double rgba(42, 28, 16, 0.6);
+}
+.paz-tratado p {
+  margin: 0 0 10px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  animation: paz-fade 0.9s 2.6s backwards;
+}
+
+/* Firmas que se escriben solas */
+.paz-firmas { display: flex; flex-direction: column; gap: 2px; }
+.paz-firma {
+  display: flex;
+  flex-direction: column;
+  padding-top: 2px;
+  border-bottom: 1px solid rgba(42, 28, 16, 0.5);
+}
+.paz-firma svg {
+  width: 100%;
+  max-width: 150px;
+  height: 34px;
+  overflow: visible;
+}
+.paz-firma path {
+  fill: none;
+  stroke: #1d1a3a;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: paz-firmar 0.9s var(--d, 3s) ease-out forwards;
+}
+.paz-firma path:nth-child(2) { animation-delay: calc(var(--d, 3s) + 0.6s); }
+.paz-firma span {
+  font-size: 0.56rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* Sello de lacre */
+.paz-lacre {
+  position: absolute;
+  right: 20px;
+  bottom: -12px;
+  width: 76px;
+  height: 76px;
+  border-radius: 48% 52% 50% 50% / 52% 48% 52% 48%;
+  background: radial-gradient(circle at 34% 28%, #e0574a 0 10%, #b3322a 30%, #8f2a1a 60%, #4a0f0b 100%);
+  box-shadow:
+    inset 0 0 0 5px rgba(0, 0, 0, 0.18),
+    inset 0 0 12px rgba(0, 0, 0, 0.5),
+    0 6px 10px rgba(0, 0, 0, 0.55);
+  transform: rotate(-8deg);
+  animation: paz-lacre-cae 0.5s 6.3s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.paz-lacre::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 2px dashed rgba(255, 222, 200, 0.4);
+  border-radius: 50%;
+}
+.paz-lacre::after {
+  content: "★";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.9rem;
+  color: rgba(255, 226, 206, 0.8);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+#paz-continue-btn { animation: paz-fade 0.8s 2.6s backwards; }
+
+/* --- Animaciones --- */
+@keyframes paz-amanece {
+  from { filter: brightness(0.15) saturate(0.6); }
+  to { filter: none; }
+}
+@keyframes paz-sol-sube {
+  from { transform: translate(-50%, 70%); }
+  to { transform: translate(-50%, 0); }
+}
+@keyframes paz-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes paz-destello {
+  0% { opacity: 0; }
+  12% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+@keyframes paz-golpe {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-7px, 4px); }
+  30% { transform: translate(6px, -5px); }
+  45% { transform: translate(-5px, -3px); }
+  60% { transform: translate(4px, 3px); }
+  80% { transform: translate(-2px, 1px); }
+}
+@keyframes paz-diario-entra {
+  from { opacity: 0; transform: translateY(-40px) rotate(-8deg) scale(1.35); }
+  to { opacity: 1; transform: rotate(-2deg); }
+}
+@keyframes paz-tratado-entra {
+  from { opacity: 0; transform: translate(40px, 60px) rotate(9deg) scale(0.94); }
+  to { opacity: 1; transform: rotate(3deg); }
+}
+@keyframes paz-firmar {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes paz-lacre-cae {
+  from { opacity: 0; transform: scale(2.6) rotate(-25deg); }
+  70% { opacity: 1; }
+  to { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+
+/* --- Pantallas chicas --- */
+@media (max-width: 820px) {
+  .paz-escena { flex-direction: column; align-items: center; }
+  .paz-diario { width: min(92vw, 560px, calc((100vh - 330px) * 1.36)); }
+  .paz-tratado {
+    align-self: center;
+    width: min(86vw, 340px);
+    margin: -46px 0 0 40px;
+  }
+}
+
+@media (max-height: 520px) {
+  .paz-kicker { display: none; }
+  .paz-tratado p { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #paz-overlay,
+  #paz-overlay * {
+    animation-duration: 0.01s !important;
+    animation-delay: 0s !important;
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "el-pozo",
+  "version": "0.1.0",
+  "description": "El Pozo - La vigilia del subocial Navajas - Prototipo cliente-servidor",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

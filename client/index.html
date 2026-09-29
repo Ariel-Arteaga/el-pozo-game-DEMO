@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El Pozo — La vigilia del subocial Navajas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Special+Elite&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #game-wrap { position: relative; }
+    #radar-panel {
+      position: relative;
+      width: 230px;
+      height: 132px;
+      margin-left: auto;
+      border: 2px solid #3a4a3a;
+      border-radius: 4px;
+      background: linear-gradient(160deg, #0d1410 0%, #050a07 100%);
+      box-shadow: inset 0 0 14px rgba(0,0,0,0.7), 0 0 0 1px rgba(120,200,140,0.15);
+      padding: 3px;
+      flex-shrink: 0;
+    }
+    #radar-panel::before, #radar-panel::after,
+    #radar-panel .corner-tl, #radar-panel .corner-br {
+      content: "";
+      position: absolute;
+      width: 7px; height: 7px;
+      background: #5a6a52;
+      border: 1px solid #1a1208;
+      border-radius: 50%;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.6);
+    }
+    #radar-panel::before { top: -3px; left: -3px; }
+    #radar-panel::after { top: -3px; right: -3px; }
+    #radar-label {
+      position: absolute;
+      top: 2px; left: 8px;
+      font-family: 'Special Elite', 'Courier New', monospace;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: #7fd66a;
+      text-shadow: 0 0 4px rgba(127,214,106,0.6);
+      z-index: 2;
+      pointer-events: none;
+      text-transform: uppercase;
+    }
+    #radar-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-wrap">
+    <header id="title-bar">
+      <h1>El Pozo</h1>
+      <span class="subtitle">La vigilia del subocial Navajas — Prototipo</span>
+    </header>
+
+    <div id="hud">
+      <div class="hud-brand">
+        <span class="hud-brand-star">★</span>
+        <span class="hud-brand-text">NAVAJAS</span>
+      </div>
+
+      <div class="hud-group hud-group-vitals">
+        <div class="hud-item hud-item-lives">
+          <span class="hud-label">Vidas</span>
+          <span id="lives-display" class="hud-value"></span>
+        </div>
+        <div class="hud-item hud-item-bar">
+          <span class="hud-label">Vida</span>
+          <div class="bar"><div id="bar-health" class="bar-fill health"></div></div>
+        </div>
+        <div class="hud-item hud-item-bar">
+          <span class="hud-label">Resistencia</span>
+          <div class="bar"><div id="bar-stamina" class="bar-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="hud-divider"></div>
+
+      <div class="hud-group hud-group-arsenal">
+        <div class="hud-item">
+          <span class="hud-label">Granadas</span>
+          <span id="grenade-count" class="hud-value">3</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Fuego</span>
+          <span id="fuel-count" class="hud-value">0</span>
+        </div>
+      </div>
+
+      <div class="hud-divider"></div>
+
+      <div class="hud-group hud-group-mission">
+        <div class="hud-item">
+          <span class="hud-label">Cavadores</span>
+          <span id="cavadores-count" class="hud-value">3</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Enemigos</span>
+          <span id="enemies-count" class="hud-value">4</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Puntaje</span>
+          <span id="score-count" class="hud-value">0</span>
+        </div>
+      </div>
+
+      <span id="ammo-count" class="hud-value hud-sr-only"></span>
+
+      <div id="radar-panel">
+        <span id="radar-label">Radar</span>
+        <canvas id="radar-canvas" width="460" height="264"></canvas>
+      </div>
+    </div>
+
+    <div id="fullscreen-hint">⌨ F11 — Pantalla completa</div>
+
+    <canvas id="game-canvas" width="960" height="560"></canvas>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <filter id="borde-aspero" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="4" result="r"/><feDisplacementMap in="SourceGraphic" in2="r" scale="3.2"/></filter>
+    </svg>
+
+    <div id="overlay" class="hidden">
+      <div class="parte">
+        <p class="parte-head"><span>PARTE DE GUERRA</span><span>CHACO BOREAL</span></p>
+        <h2 id="overlay-text"></h2>
+        <p id="overlay-subtext"></p>
+        <div class="score-box">
+          <span class="score-label">PUNTAJE FINAL</span>
+          <span id="final-score-value">000000</span>
+        </div>
+        <button id="restart-btn" class="btn-chaco btn-sangre">Reintentar</button>
+      </div>
+    </div>
+
+    <div id="start-screen">
+      <svg class="scene" viewBox="0 0 800 500" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<defs>
+<linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0704"/><stop offset=".34" stop-color="#2b170b"/><stop offset=".56" stop-color="#6e3616"/><stop offset=".7" stop-color="#b8692b"/><stop offset=".8" stop-color="#e0a95d"/><stop offset="1" stop-color="#ecc985"/></linearGradient>
+<radialGradient id="resplandor"><stop offset="0" stop-color="#ffe0a0" stop-opacity=".85"/><stop offset=".4" stop-color="#f0a95a" stop-opacity=".35"/><stop offset="1" stop-color="#f0964a" stop-opacity="0"/></radialGradient>
+<linearGradient id="bruma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0c078" stop-opacity="0"/><stop offset=".6" stop-color="#f0c078" stop-opacity=".5"/><stop offset="1" stop-color="#f0c078" stop-opacity="0"/></linearGradient>
+<pattern id="puas" width="24" height="6" patternUnits="userSpaceOnUse"><path d="M9 0l6 6M15 0l-6 6" stroke="#0c0703" stroke-width="1.1"/></pattern>
+<g id="soldado"><path d="M-5 0L-4 -17L-6 -29Q-6 -34 -2 -35H4Q7 -34 6 -29L5 -17L6 0H2L0 -11L-2 0Z"/><circle cx="0" cy="-39.5" r="5"/><path d="M-6.5 -41.5H6.5L5 -46H-5Z"/><path d="M-9 -24L17 -37" stroke-width="2.6" fill="none" stroke="currentColor"/></g>
+<g id="cavador"><path d="M-7 0L-5 -10L-9 -18Q-8 -24 -2 -24L4 -23L8 -12L7 0H3L1 -8L-2 0Z"/><circle cx="-6" cy="-24" r="4.6"/><path d="M-11 -30L-4 -34H2L0 -29Z"/><path d="M6 -24L20 -4M17 -9L24 -6" stroke-width="2.4" fill="none" stroke="currentColor"/></g>
+</defs>
+<rect width="800" height="500" fill="url(#cielo)"/>
+<g transform="translate(0 -46)">
+<circle cx="560" cy="336" r="170" fill="url(#resplandor)"/>
+<circle cx="560" cy="330" r="50" fill="#f6dea4"/>
+<rect y="312" width="800" height="40" fill="url(#bruma)"/>
+<g class="aves" fill="none" stroke="#0d0703" stroke-width="2.2" stroke-linecap="round"><path d="M250 118q9-8 18 0q9-8 18 0"/><path d="M330 84q7-6 14 0q7-6 14 0"/><path d="M610 140q8-7 16 0q8-7 16 0"/><path d="M675 100q6-5 12 0q6-5 12 0"/></g>
+<path d="M-10 386 L-10 342 L6 338 L21 340 L40 345 L61 346 L81 345 L97 341 L122 345 L139 338 L167 339 L186 334 L201 336 L219 344 L235 342 L260 344 L282 338 L301 339 L316 345 L333 338 L353 342 L375 341 L393 336 L417 343 L439 340 L466 337 L484 334 L499 341 L524 344 L545 346 L568 337 L590 335 L608 338 L631 339 L651 336 L678 340 L702 345 L726 338 L753 336 L771 341 L795 346 L810 386 Z" fill="#5b3418" opacity=".85"/>
+<path d="M-10 396 L-10 353 L10 355 L42 354 L64 350 L98 355 L124 347 L158 343 L192 352 L217 350 L251 341 L272 353 L294 352 L321 347 L343 356 L369 350 L397 341 L428 348 L457 345 L476 342 L508 342 L540 350 L565 354 L595 355 L614 353 L635 351 L654 356 L674 354 L699 356 L733 346 L753 352 L778 350 L798 342 L810 396 Z" fill="#3d2110"/>
+<path d="M-10 500 L-10 379 L30 376 L70 373 L110 374 L150 371 L190 365 L230 366 L270 372 L310 373 L350 372 L390 378 L430 379 L470 372 L510 369 L550 370 L590 368 L630 365 L670 371 L710 377 L750 376 L790 374 L810 500 Z" fill="#26150a"/>
+<g fill="none" stroke="#0f0804" stroke-linecap="round"><path stroke-width="10" d="M140 420Q137 382 135 345"/><path stroke-width="7" d="M135 345Q140 322 150 296M135 345Q115 322 101 305"/><path stroke-width="5" d="M135 345Q145 326 162 312"/><path stroke-width="4" d="M150 296Q162 278 174 265M150 296Q145 279 135 260M101 305Q82 298 64 289M101 305Q81 296 62 294"/><path stroke-width="3" d="M150 296Q145 282 139 270M101 305Q87 303 72 300M162 312Q165 298 164 284M162 312Q174 304 184 299"/><path stroke-width="3" d="M174 265Q188 262 200 255M174 265Q180 251 182 238M135 260Q134 248 138 237M135 260Q126 252 112 242M64 289Q52 295 38 297M64 289Q50 292 35 296M62 294Q53 284 46 273M62 294Q48 295 35 297"/></g>
+<g fill="none" stroke="#0f0804" stroke-linecap="round"><path stroke-width="9" d="M676 418Q673 384 679 351"/><path stroke-width="6" d="M679 351Q666 330 658 309M679 351Q670 330 664 311"/><path stroke-width="4" d="M679 351Q667 339 654 324"/><path stroke-width="4" d="M658 309Q643 305 624 295M658 309Q657 292 663 274M664 311Q656 298 643 288M664 311Q668 298 666 285"/><path stroke-width="3" d="M654 324Q644 320 632 316M654 324Q640 317 627 315"/><path stroke-width="3" d="M624 295Q616 285 609 276M624 295Q610 296 596 294M663 274Q659 260 656 247M663 274Q670 263 678 252M643 288Q643 276 642 265M643 288Q632 285 623 279M666 285Q662 277 656 271M666 285Q659 277 655 270"/></g>
+<g id="pozo" fill="#0d0703" stroke="#0d0703">
+<path d="M362 386Q368 366 396 362Q430 356 464 362Q494 366 502 386Z" stroke="none"/>
+<rect x="392" y="322" width="5" height="44" stroke="none"/><rect x="462" y="322" width="5" height="44" stroke="none"/>
+<rect x="384" y="318" width="92" height="6" stroke="none"/>
+<path d="M396 366L430 322L464 366" fill="none" stroke-width="3"/>
+<path d="M430 324V358" fill="none" stroke-width="1.6"/><path d="M425 358H435L433 368H427Z" stroke="none"/>
+</g>
+<g fill="#0d0703" color="#0d0703"><use href="#soldado" transform="translate(236 392)"/><use href="#cavador" transform="translate(372 388) scale(-1 1)"/><use href="#cavador" transform="translate(498 386)"/></g>
+<path d="M-10 500 L-10 424 L30 425 L70 422 L110 421 L150 423 L190 423 L230 418 L270 414 L310 415 L350 419 L390 421 L430 420 L470 420 L510 424 L550 427 L590 423 L630 417 L670 416 L710 418 L750 419 L790 416 L810 500 Z" fill="#160c05"/>
+<g stroke="#0c0703" fill="none"><path stroke-width="4" d="M20 428L20 372"/><path stroke-width="4" d="M170 428L168 372"/><path stroke-width="4" d="M320 428L319 372"/><path stroke-width="4" d="M470 428L468 372"/><path stroke-width="4" d="M620 428L618 372"/><path stroke-width="4" d="M770 428L770 372"/><path stroke-width="1.3" d="M20 380H780M20 395H780"/><rect x="20" y="377" width="760" height="6" fill="url(#puas)" stroke="none"/><rect x="20" y="392" width="760" height="6" fill="url(#puas)" stroke="none"/></g>
+<path d="M-10 500 L-10 456 L30 452 L70 452 L110 451 L150 447 L190 451 L230 454 L270 453 L310 456 L350 454 L390 449 L430 450 L470 450 L510 449 L550 454 L590 456 L630 453 L670 454 L710 451 L750 447 L790 451 L810 500 Z" fill="#0b0603"/>
+</g>
+<rect y="430" width="800" height="70" fill="#0b0603"/>
+</svg>
+      <div class="polvo polvo-a"></div>
+      <div class="polvo polvo-b"></div>
+      <div class="velo"></div>
+      <div class="start-top">
+        <p class="start-kicker">GUERRA DEL CHACO · 1932 — 1935</p>
+        <h2 id="start-title">EL POZO</h2>
+        <p class="start-subtitle">La vigilia del subocial Navajas</p>
+      </div>
+      <div class="start-bottom">
+        <div class="start-menu">
+          <button id="start-btn" class="btn-chaco btn-sangre blink" autofocus>Modo Aventura</button>
+          <button id="history-btn" class="btn-chaco btn-papel">Historia</button>
+        </div>
+        <p class="start-help">FLECHAS/WASD: MOVER · SHIFT: CORRER · ESPACIO: DISPARAR · G: GRANADA · F: CUERPO A CUERPO · E: LANZALLAMAS</p>
+        <p class="start-credit">BASADO EN EL CUENTO DE AUGUSTO CÉSPEDES</p>
+      </div>
+    </div>
+
+    <section id="paz-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="paz-titulo">
+      <div class="paz-cielo"></div>
+      <div class="paz-sol"></div>
+      <div class="paz-colinas paz-colinas-a"></div>
+      <div class="paz-colinas paz-colinas-b"></div>
+      <div class="paz-pozo"></div>
+      <div class="polvo polvo-a"></div>
+      <div class="polvo polvo-b"></div>
+      <div class="velo"></div>
+      <div class="paz-flash"></div>
+
+      <p class="ls-kicker paz-kicker">CHACO BOREAL · 1935</p>
+
+      <div class="paz-escena">
+        <figure class="paz-diario">
+          <img src="paz.png" alt="Portada de Noticias Gráficas: La paz en el Chaco está lograda" onerror="this.parentElement.classList.add('sin-imagen'); this.remove()" />
+          <span class="paz-titular">La paz en el Chaco está lograda</span>
+          <figcaption>Noticias Gráficas · Domingo 9 de junio de 1935</figcaption>
+        </figure>
+
+        <article class="paz-tratado">
+          <span class="paz-tipo">Acta de paz</span>
+          <h2 id="paz-titulo">Paz en el Chaco</h2>
+          <p>Tras tres años de guerra, los fusiles se callan. Las armas descansan. Que esta tierra, regada con tanta sangre, vuelva a dar agua y no dolor.</p>
+
+          <div class="paz-firmas">
+            <div class="paz-firma" style="--d:3.2s">
+              <svg viewBox="0 0 140 40" aria-hidden="true"><path pathLength="1" d="M4 28 C10 6 18 4 20 20 S26 34 34 16 S44 6 46 24 C50 34 58 12 66 18 S78 30 84 14 C92 6 96 30 108 20 L132 12"/></svg>
+              <span>Por Bolivia</span>
+            </div>
+            <div class="paz-firma" style="--d:4.2s">
+              <svg viewBox="0 0 140 40" aria-hidden="true"><path pathLength="1" d="M6 20 C14 30 24 8 30 18 C36 30 42 10 50 14 S60 32 70 20 C80 8 84 30 96 24 S112 8 120 22"/><path pathLength="1" d="M24 35 L118 31"/></svg>
+              <span>Por Paraguay</span>
+            </div>
+            <div class="paz-firma" style="--d:5.2s">
+              <svg viewBox="0 0 140 40" aria-hidden="true"><path pathLength="1" d="M4 24 C12 8 20 34 28 18 C34 6 40 30 50 22 S62 6 70 20 S86 34 96 18 C104 8 112 26 130 16"/><path pathLength="1" d="M20 36 C50 30 90 34 128 28"/></svg>
+              <span>Testigo: Sub. Navajas</span>
+            </div>
+          </div>
+
+          <div class="paz-lacre" aria-hidden="true"></div>
+        </article>
+      </div>
+
+      <button id="paz-continue-btn" class="btn-chaco btn-sangre">Continuar</button>
+    </section>
+
+    <section id="level-select" class="hidden" role="dialog" aria-modal="true" aria-labelledby="ls-title">
+      <p class="ls-kicker">MODO AVENTURA</p>
+      <h2 id="ls-title" class="ls-title">Elige tu frente</h2>
+      <p class="ls-sub">Tres frentes. Una sola guerra. · Atajos: 1 · 2 · 3</p>
+
+      <div class="ls-cards">
+        <button class="nivel-card" data-level="0">
+          <span class="nivel-foto">
+            <img src="nivel1.jpeg" alt="Nivel 1: La Infiltración" onerror="this.remove()" />
+            <span class="nivel-num">Nivel I</span>
+            <span class="nivel-hora">Tarde</span>
+          </span>
+          <span class="nivel-titulo">La Infiltración</span>
+          <span class="nivel-desc">Avanza por territorio enemigo entre alambradas, torretas y morteros. Libera prisioneros y sobrevive al tren blindado.</span>
+          <span class="nivel-tags"><span>Tren blindado</span><span>Prisioneros</span><span>Bombardero</span></span>
+          <span class="nivel-cta">Entrar</span>
+        </button>
+
+        <button class="nivel-card" data-level="1">
+          <span class="nivel-foto">
+            <img src="nivel2.jpeg" alt="Nivel 2: Maquinaria Pesada" onerror="this.remove()" />
+            <span class="nivel-num">Nivel II</span>
+            <span class="nivel-hora">Ocaso</span>
+          </span>
+          <span class="nivel-titulo">Maquinaria Pesada</span>
+          <span class="nivel-desc">El enemigo trae acero: tanquetas de todos los calibres y morteros. Esquiva, aguanta y gasta bien tus granadas.</span>
+          <span class="nivel-tags"><span>Tanquetas</span><span>Morteros</span><span>Bombardero</span></span>
+          <span class="nivel-cta">Entrar</span>
+        </button>
+
+        <button class="nivel-card" data-level="2">
+          <span class="nivel-foto">
+            <img src="nivel3.jpeg" alt="Nivel 3: La Vigilia" onerror="this.remove()" />
+            <span class="nivel-num">Nivel III</span>
+            <span class="nivel-hora">Noche</span>
+          </span>
+          <span class="nivel-titulo">La Vigilia</span>
+          <span class="nivel-desc">Defiende el pozo mientras los cavadores buscan agua. Oleadas, bombardeo y noche cerrada.</span>
+          <span class="nivel-tags"><span>El pozo</span><span>Cavadores</span><span>Lanzallamas</span></span>
+          <span class="nivel-cta">Entrar</span>
+        </button>
+      </div>
+
+      <button id="ls-back-btn" class="btn-chaco btn-papel">← Volver</button>
+    </section>
+
+    <section id="history-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="hist-title">
+      <header class="hist-head">
+        <div>
+          <p class="ls-kicker">ARCHIVO DEL CHACO · 1932 — 1935</p>
+          <h2 id="hist-title" class="ls-title">Historia</h2>
+        </div>
+        <button id="hist-back-btn" class="btn-chaco btn-papel">← Volver</button>
+      </header>
+
+      <div class="hist-scroll">
+        <article class="hist-intro">
+          <p class="hist-sello">Expediente</p>
+          <p>La Guerra del Chaco (1932–1935) enfrentó a Bolivia y Paraguay por el Chaco Boreal, una llanura seca de monte espinoso y casi sin agua. Fue una guerra entre pueblos hermanos: la sed, el calor y las enfermedades pesaron tanto como las balas, y decenas de miles de soldados de ambos bandos no volvieron.</p>
+          <p>El escritor y periodista Augusto Céspedes vivió esa guerra de cerca y la contó en «Sangre de mestizos» (1936), libro que incluye el relato «El pozo». Este juego se inspira libremente en ese cuento: un grupo de soldados, un agujero en la tierra y una sola esperanza, encontrar agua.</p>
+
+          <ol class="hist-linea">
+            <li><b>1932</b><strong>Boquerón</strong><span>Un fortín boliviano resiste el asedio casi tres semanas antes de rendirse.</span></li>
+            <li><b>1933</b><strong>Nanawa</strong><span>Los asaltos a la fortaleza paraguaya se pagan con miles de vidas.</span></li>
+            <li><b>1935</b><strong>Villamontes</strong><span>Bolivia frena el avance paraguayo. El 12 de junio se calla el fuego.</span></li>
+            <li><b>1938</b><strong>La paz</strong><span>Se firma en Buenos Aires: Paraguay conserva la mayor parte del Chaco Boreal.</span></li>
+          </ol>
+        </article>
+
+        <h3 class="hist-subtitulo">Cartas y documentos</h3>
+        <div id="hist-grid" class="hist-grid"></div>
+      </div>
+    </section>
+
+    <div id="letter-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="letter-title">
+      <div class="carta-marco">
+        <article class="carta-papel">
+          <div class="carta-fibra"></div>
+          <div class="mancha-cafe"></div>
+          <div class="mancha-cafe mancha-cafe-2"></div>
+          <div class="mancha-sangre"></div>
+          <div class="quemadura"></div>
+          <div class="doblez doblez-horizontal"></div>
+          <div class="doblez doblez-vertical"></div>
+          <div class="carta-scroll">
+            <div id="letter-content" class="carta-texto"></div>
+          </div>
+          <footer class="carta-pie">
+            <span class="carta-hint">ENTER · ESPACIO</span>
+            <button id="close-letter-btn" class="btn-chaco btn-sangre">Continuar</button>
+          </footer>
+        </article>
+      </div>
+    </div>
+
+    <div id="pause-menu" class="hidden">
+      <div class="parte">
+        <p class="parte-head"><span>ORDEN DEL DÍA</span><span>ALTO EL FUEGO</span></p>
+        <h2 id="pause-title">PAUSA</h2>
+        <p class="pause-sub">El pozo espera. La sed no.</p>
+        <div class="pause-buttons">
+          <button id="pause-resume-btn" class="btn-chaco btn-sangre">Continuar</button>
+          <button id="pause-restart-btn" class="btn-chaco">Reiniciar</button>
+          <button id="pause-menu-btn" class="btn-chaco">Menú Principal</button>
+        </div>
+        <p class="pause-hint">ESC: CONTINUAR</p>
+      </div>
+    </div>
+
+    <p id="controls-help">Flechas/WASD: mover · Shift: correr · Espacio: disparar · G: granada · F: cuerpo a cuerpo · E: lanzallamas · Esc: pausa</p>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="terrain.js"></script>
+  <script src="game.js"></script>
+  <script src="extras.js"></script>
+</body>
+</html>
